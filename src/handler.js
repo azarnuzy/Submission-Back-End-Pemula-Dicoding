@@ -163,11 +163,11 @@ const getAllBooksHandler = (request, h) => {
 };
 
 const getBookByIdHandler = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
-  const book = books.filter((n) => n.id === id)[0];
+  const book = books.filter((n) => n.id === bookId)[0];
 
-  if (book !== undefined) {
+  if (book) {
     const response = h.response({
       status: 'success',
       data: {
@@ -189,7 +189,7 @@ const getBookByIdHandler = (request, h) => {
 };
 
 const editBookByIdHandler = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
   const {
     name,
@@ -201,11 +201,8 @@ const editBookByIdHandler = (request, h) => {
     readPage,
     reading,
   } = request.payload;
-  const updatedAt = new Date().toISOString();
 
-  const index = books.findIndex((book) => book.id === id);
-
-  if (name === undefined) {
+  if (!name) {
     const response = h.response({
       status: 'fail',
       message: 'Gagal memperbarui buku. Mohon isi nama buku',
@@ -226,6 +223,11 @@ const editBookByIdHandler = (request, h) => {
     return response;
   }
 
+  const finished = pageCount === readPage;
+  const updatedAt = new Date().toISOString();
+
+  const index = books.findIndex((note) => note.id === bookId);
+
   if (index !== -1) {
     books[index] = {
       ...books[index],
@@ -237,6 +239,7 @@ const editBookByIdHandler = (request, h) => {
       pageCount,
       readPage,
       reading,
+      finished,
       updatedAt,
     };
 
@@ -244,13 +247,13 @@ const editBookByIdHandler = (request, h) => {
       status: 'success',
       message: 'Buku berhasil diperbarui',
     });
+
     response.code(200);
     return response;
   }
-
   const response = h.response({
     status: 'fail',
-    message: 'Gagal memperbarui catatan. Id tidak ditemukan',
+    message: 'Gagal memperbarui buku. Id tidak ditemukan',
   });
 
   response.code(404);
@@ -265,8 +268,8 @@ const deleteBookByIdHandler = (request, h) => {
   if (index !== -1) {
     books.splice(index, 1);
     const response = h.response({
-      status: 'succes',
-      message: 'Book berhasil dihapus',
+      status: 'success',
+      message: 'Buku berhasil dihapus',
     });
 
     response.code(200);
